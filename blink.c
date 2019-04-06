@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "reg.h"
 
+#define BUTTON_USER 0
 /**
  * 
  * LED init
@@ -26,6 +27,23 @@ void led_init(unsigned int led)
 	CLEAR_BIT(GPIO_BASE(GPIO_PORTD) + GPIOx_PUPDR_OFFSET, PUPDRy_0_BIT(led));
 }
 
+void button_init()
+{
+	SET_BIT(RCC_BASE + RCC_AHB1ENR_OFFSET, GPIO_EN_BIT(GPIO_PORTA));
+
+	//moder
+	CLEAR_BIT(GPIO_BASE(GPIO_PORTA) + GPIOx_MODER_OFFSET, MODERy_1_BIT(BUTTON_USER));
+	CLEAR_BIT(GPIO_BASE(GPIO_PORTA) + GPIOx_MODER_OFFSET, MODERy_0_BIT(BUTTON_USER));
+
+	//PUPDR
+	SET_BIT(GPIO_BASE(GPIO_PORTA) + GPIOx_PUPDR_OFFSET, PUPDRy_1_BIT(BUTTON_USER));
+	CLEAR_BIT(GPIO_BASE(GPIO_PORTA) + GPIOx_PUPDR_OFFSET, PUPDRy_0_BIT(BUTTON_USER)); 
+
+
+
+
+}
+
 /**
  * 
  * blink LED forever
@@ -34,10 +52,20 @@ void led_init(unsigned int led)
 void blink(unsigned int led)
 {
 	led_init(led);
+	button_init();
+	
+	unsigned int i,x;
 
-	unsigned int i;
+	while(1)
+	{
+		x=READ_BIT(GPIO_BASE(GPIO_PORTA) + GPIOx_IDR, BUTTON_USER);
+		if (x==1) {
+			break;
+		}
+		
+	}
 
-	while (1)
+	while (1) 
 	{
 		//set GPIOD led pin
 		SET_BIT(GPIO_BASE(GPIO_PORTD) + GPIOx_BSRR_OFFSET, BSy_BIT(led));
